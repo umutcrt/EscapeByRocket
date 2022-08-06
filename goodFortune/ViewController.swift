@@ -14,6 +14,7 @@ var labelArray: [UILabel] = []
 var countArray: [String] = ["3", "2", "1", "0"]
 var timer = Timer()
 var timer2 = Timer()
+
 var scoreCount = 0
 var counter = 0
 var highScore = 0
@@ -47,7 +48,6 @@ class ViewController: UIViewController, GADFullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
         print("Ad did dismiss full screen content.")
     }
-    
     var player: AVAudioPlayer?
     var player2: AVAudioPlayer?
     var player3: AVAudioPlayer?
@@ -92,7 +92,6 @@ class ViewController: UIViewController, GADFullScreenContentDelegate {
         playLabel.isHidden = false
         tryAgainButton.isHidden = true
     }
-    
     func trueorfalse2() {
         adButtonLabel.isHidden = true
         countDown.isHidden = false
@@ -101,7 +100,6 @@ class ViewController: UIViewController, GADFullScreenContentDelegate {
         playLabel.isHidden = true
         volumeLabel.isHidden = true
     }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -145,16 +143,18 @@ class ViewController: UIViewController, GADFullScreenContentDelegate {
         scoreLabel.frame = CGRect(x: width * 0.45, y: height * 0.1, width: width * 0.45, height: height * 0.1)
         descriptionLabel.frame = CGRect(x: width * 0.05, y: height * 0.2, width: width * 0.90, height: height * 0.4)
         volumeLabel.frame = CGRect(x: width * 0.40, y: height * 0.57, width: width * 0.20, height: height * 0.1)
-        adButtonLabel.frame = CGRect(x: width * 0.55, y: height * 0.68, width: width * 0.45, height: height * 0.12)
-        continueButtonLabel.frame = CGRect(x: width * 0.55, y: height * 0.68, width: width * 0.45, height: height * 0.12)
+        adButtonLabel.frame = CGRect(x: width * 0.5, y: height * 0.68, width: width * 0.45, height: height * 0.12)
+        continueButtonLabel.frame = CGRect(x: width * 0.5, y: height * 0.68, width: width * 0.45, height: height * 0.12)
         playLabel.frame = CGRect(x: width * 0.25, y: height * 0.83, width: width * 0.5, height: height * 0.12)
         tryAgainButton.frame = CGRect(x: width * 0.05, y: height * 0.68, width: width * 0.45, height: height * 0.12)
-        fireButton.frame = CGRect(x: width * 0.15, y: height * 0.70, width: width * 0.7, height: height * 0.27)
+        fireButton.frame = CGRect(x: width * 0.0, y: height * 0.7, width: width * 1, height: height * 0.3)
         backgroundImage.frame = CGRect(x: width * 0.0, y: height * 0.0, width: width * 1, height: height * 1)
         highScore = UserDefaults.standard.value(forKey: "highscore")  as? Int ?? 0
         highScoreLabel.text = "HIGH SCORE: \(highScore)"
         descriptionLabel.text = "Travel to more planets by tapping the rocket. 🚀\n\nBut the stars are very hot, so be careful if you don't want to be bubbles. 🫧"
         tryAgainButton.titleLabel?.textAlignment = .center
+        adButtonLabel.titleLabel?.textAlignment = .center
+        continueButtonLabel.titleLabel?.textAlignment = .center
         trueorfalse()
     }
     @objc func hidebox() {
@@ -227,7 +227,6 @@ class ViewController: UIViewController, GADFullScreenContentDelegate {
             countArray.removeAll()
             countArray = ["3", "2", "1", "0"]
             hidebox()
-            timer = Timer.scheduledTimer(timeInterval: 0.45, target: self, selector: #selector(hidebox), userInfo: nil, repeats: true)
             fireButton.isEnabled = true
         }
     }
@@ -261,7 +260,11 @@ class ViewController: UIViewController, GADFullScreenContentDelegate {
         } catch {
             print("error")
         }
-        timer2 = Timer.scheduledTimer(timeInterval: 0.8, target: self, selector: #selector(self.countdownForRocket), userInfo: nil, repeats: true)
+        timer2 = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.countdownForRocket), userInfo: nil, repeats: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            timer.invalidate()
+            timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(self.hidebox), userInfo: nil, repeats: true)
+        }
     }
     
     @IBAction func adButton(_ sender: Any) {
@@ -277,11 +280,16 @@ class ViewController: UIViewController, GADFullScreenContentDelegate {
                 self.adButtonLabel.isHidden = true
             }
         } else {
-            self.player6?.play()
+            if volumeCount == 0 {
+                self.player6?.play()
+                self.player6?.numberOfLoops = -1
+            } else {}
+            
             print("Ad wasn't ready")
         }
     }
     @IBAction func catchButton(_ sender: Any) {
+        
         if selected.text! == "🪐" {
             let pathToSound3 = Bundle.main.path(forResource: "game", ofType: "wav")!
             let url = URL(fileURLWithPath: pathToSound3)
@@ -297,7 +305,8 @@ class ViewController: UIViewController, GADFullScreenContentDelegate {
             selected.attributedText = fullString
             scoreCount += 1
             scoreLabel.text = "\(scoreCount)"
-        } else {
+        }
+        else if selected.text! == "✨" {
             UINotificationFeedbackGenerator().notificationOccurred(.error)
             player?.stop()
             let pathToSound4 = Bundle.main.path(forResource: "bubble", ofType: "wav")!
@@ -325,11 +334,11 @@ class ViewController: UIViewController, GADFullScreenContentDelegate {
             } else {
                 adButtonLabel.isHidden = false
             }
+            timer.invalidate()
             fireButton.isHidden = true
             tryAgainButton.isHidden = false
-            timer.invalidate()
             scoreLabel.text = "\(scoreCount)"
-        }
+        } else {}
     }
     @IBAction func tryAgain(_ sender: Any) {
         selected.text = ""
@@ -352,7 +361,6 @@ class ViewController: UIViewController, GADFullScreenContentDelegate {
         fireButton.isEnabled = false
         scoreCount = 0
         scoreLabel.text = "\(scoreCount)"
-        
         player6?.stop()
         let pathToSound5 = Bundle.main.path(forResource: "rocket", ofType: "wav")!
         let url = URL(fileURLWithPath: pathToSound5)
@@ -364,7 +372,11 @@ class ViewController: UIViewController, GADFullScreenContentDelegate {
         } catch {
             print("error")
         }
-        timer2 = Timer.scheduledTimer(timeInterval: 0.8, target: self, selector: #selector(countdownForRocket), userInfo: nil, repeats: true)
+        
+        timer2 = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(countdownForRocket), userInfo: nil, repeats: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(self.hidebox), userInfo: nil, repeats: true)
+        }
     }
 }
 
