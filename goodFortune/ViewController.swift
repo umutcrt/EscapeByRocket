@@ -26,7 +26,7 @@ class ViewController: UIViewController, GADFullScreenContentDelegate {
     private var rewardedAd: GADRewardedAd?
     func loadRewardedAd() {
         let request = GADRequest()
-        GADRewardedAd.load(withAdUnitID:"ca-app-pub-4842642976376796/7347403137",
+        GADRewardedAd.load(withAdUnitID:"***",
                            request: request,
                            completionHandler: { [self] ad, error in
             if let error = error {
